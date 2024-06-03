@@ -1,0 +1,34 @@
+[project]
+name = "simple-config-parser"
+version = "0.0.1"
+description = "A simple config parser for Python"
+authors = [
+    {name = "Dominik Willner", email = "th33xitus@gmail.com"},
+]
+readme = "README.md"
+license = {text = "GPL-3.0-only"}
+requires-python = ">=3.8"
+
+[project.urls]
+homepage = "https://github.com/dw-0/simple-config-parser"
+repository = "https://github.com/dw-0/simple-config-parser"
+documentation = "https://github.com/dw-0/simple-config-parser"
+
+[project.optional-dependencies]
+dev=["ruff"]
+
+[tool.ruff]
+required-version = ">=0.3.4"
+respect-gitignore = true
+exclude = [".git",".github", "./docs"]
+line-length = 88
+indent-width = 4
+output-format = "full"
+
+[tool.ruff.format]
+indent-style = "space"
+line-ending = "lf"
+quote-style = "double"
+
+[tool.ruff.lint]
+extend-select = ["I"]
