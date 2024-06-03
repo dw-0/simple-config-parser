@@ -102,11 +102,27 @@ class SimpleConfigParser:
     def write(self, filename):
         """Write the internal state to the given file"""
 
-        content: List[str] = []
+        content = self._construct_content()
 
+        with open(filename, "w") as f:
+            f.write(content)
+
+    def _construct_content(self):
+        """
+        Constructs the content of the configuration file based on the internal state of the _config object.
+
+        This function builds the content of the configuration file by iterating over the sections and their options.
+        It starts by checking if a header is present and extends the content list with its elements.
+        Then, for each section, it appends the raw representation of the section to the content list.
+        If the section has a body, it iterates over its options and extends the content list with their raw representations.
+        If an option is multiline, it also extends the content list with its raw value.
+        Finally, the content list is joined into a single string and returned.
+
+        :return: The content of the configuration file as a string
+        """
+        content: List[str] = []
         if self._header is not None:
             content.extend(self._header)
-
         for section in self._config:
             content.append(self._config[section]["_raw"])
 
@@ -115,11 +131,9 @@ class SimpleConfigParser:
                     content.extend(option["_raw"])
                     if option["is_multiline"]:
                         content.extend(option["_raw_value"])
-
         content: str = "".join(content)
 
-        with open(filename, "w") as f:
-            f.write(content)
+        return content
 
     def sections(self) -> List[str]:
         """Return a list of section names"""
