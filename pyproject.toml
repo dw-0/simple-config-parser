@@ -32,3 +32,7 @@ quote-style = "double"
 
 [tool.ruff.lint]
 extend-select = ["I"]
+
+[tool.pytest.ini_options]
+minversion = "8.2.1"
+testpaths = ["tests"]
