@@ -64,10 +64,10 @@ class DuplicateOptionError(Exception):
 class SimpleConfigParser:
     """A customized config parser targeted at handling Klipper style config files"""
 
-    _SECTION_RE = re.compile(r"\s*\[(\w+ ?\w+)]\s*([#|;].*)*$")
-    _OPTION_RE = re.compile(r"^\s*(\w+)\s*[:=][^:=]\s*(.+)\s*([#|;]*).*$")
-    _ML_OPTION_RE = re.compile(r"^\s*(\w+)\s*[:=][^:=]\s*([#|;]*).*$")
-    _COMMENT_RE = re.compile(r"^\s*[#;].*")
+    _SECTION_RE = re.compile(r"\s*\[(\w+ ?\w+)]\s*([#;].*)?$")
+    _OPTION_RE = re.compile(r"^\s*(\w+)\s*[:=]\s*(.+)\s*([#;].*)?$")
+    _ML_OPTION_RE = re.compile(r"^\s*(\w+)\s*[:=]\s*([#;].*)?$")
+    _COMMENT_RE = re.compile(r"^\s*([#;].*)?$")
     _EMPTY_LINE_RE = re.compile(r"^\s*$")
 
     BOOLEAN_STATES = {
