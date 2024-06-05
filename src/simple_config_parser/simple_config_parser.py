@@ -16,11 +16,32 @@ _UNSET = object()
 
 
 class Section(TypedDict):
+    """
+    A single section in the config file
+
+    - _raw: The raw representation of the section name
+    - options: A list of options in the section
+    """
+
     _raw: str
     options: List[Option]
 
 
 class Option(TypedDict, total=False):
+    """
+    A single option in a section in the config file
+
+    - is_multiline: Whether the option is a multiline option
+    - option: The name of the option
+    - value: The value of the option
+    - _raw: The raw representation of the option
+    - _raw_value: The raw value of the option
+
+    A multinline option is an option that contains multiple lines of text following
+    the option name in the next line. The value of a multiline option is a list of
+    strings, where each string represents a single line of text.
+    """
+
     is_multiline: bool
     option: str
     value: List[str]
