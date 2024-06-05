@@ -399,7 +399,7 @@ class SimpleConfigParser:
             # it might be a might be a multiline option block
             elif self._is_multiline_option(line):
                 self.in_option_block = True
-                _curr_multi_opt = self._ML_OPTION_RE.match(line).group(1).strip()
+                _curr_multi_opt = self._OPTION_RE.match(line).group(1).strip()
                 self._add_option_to_section_body(_curr_multi_opt, "", line)
 
             elif self.in_option_block:
