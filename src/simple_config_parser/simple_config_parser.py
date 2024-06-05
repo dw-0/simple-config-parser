@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Callable, List, Tuple, TypedDict
+from typing import Callable, Dict, List, Match, Tuple, TypedDict
 
 _UNSET = object()
 
@@ -86,8 +86,7 @@ class SimpleConfigParser:
     """A customized config parser targeted at handling Klipper style config files"""
 
     _SECTION_RE = re.compile(r"\s*\[(\w+ ?\w+)]\s*([#;].*)?$")
-    _OPTION_RE = re.compile(r"^\s*(\w+)\s*[:=]\s*(.+)\s*([#;].*)?$")
-    _ML_OPTION_RE = re.compile(r"^\s*(\w+)\s*[:=]\s*([#;].*)?$")
+    _OPTION_RE = re.compile(r"^\s*(\w+)\s*[:=]\s*(\w*)\s*([#;].*)?$")
     _COMMENT_RE = re.compile(r"^\s*([#;].*)?$")
     _EMPTY_LINE_RE = re.compile(r"^\s*$")
 
@@ -103,11 +102,11 @@ class SimpleConfigParser:
     }
 
     def __init__(self):
-        self._config: dict = {}
+        self._config: Dict = {}
         self._header: List[str] = []
-        self._sections: List[str] = []
-        self._options: dict = {}
-        self.curr_sect_name: str = ""
+        self._all_sections: List[str] = []
+        self._all_options: Dict = {}
+        self.section_name: str = ""
         self.in_option_block: bool = False  # whether we are in a multiline option block
 
     def read(self, file: Path):
@@ -159,31 +158,31 @@ class SimpleConfigParser:
     def sections(self) -> List[str]:
         """Return a list of section names"""
 
-        return self._sections
+        return self._all_sections
 
     def add_section(self, section: str) -> None:
         """Add a new section to the internal state"""
 
-        if section in self._sections:
+        if section in self._all_sections:
             raise DuplicateSectionError(section)
-        self._sections.append(section)
-        self._options[section] = {}
+        self._all_sections.append(section)
+        self._all_options[section] = {}
         self._config[section] = {"_raw": f"\n[{section}]\n", "body": []}
 
     def remove_section(self, section: str) -> None:
         """Remove the given section"""
 
-        if section not in self._sections:
+        if section not in self._all_sections:
             raise NoSectionError(section)
 
-        del self._sections[self._sections.index(section)]
-        del self._options[section]
+        del self._all_sections[self._all_sections.index(section)]
+        del self._all_options[section]
         del self._config[section]
 
     def options(self, section) -> List[str]:
         """Return a list of option names for the given section name"""
 
-        return self._options.get(section)
+        return self._all_options.get(section)
 
     def get(self, section: str, option: str, fallback: str | _UNSET = _UNSET) -> str:
         """
@@ -194,13 +193,13 @@ class SimpleConfigParser:
         """
 
         try:
-            if section not in self._sections:
+            if section not in self._all_sections:
                 raise NoSectionError(section)
 
-            if option not in self._options.get(section):
+            if option not in self._all_options.get(section):
                 raise NoOptionError(option, section)
 
-            return self._options[section][option]
+            return self._all_options[section][option]
         except (NoSectionError, NoOptionError):
             if fallback is not _UNSET:
                 raise
@@ -245,12 +244,12 @@ class SimpleConfigParser:
     def items(self, section: str) -> List[Tuple[str, str]]:
         """Return a list of (option, value) tuples for a specific section"""
 
-        if section not in self._sections:
+        if section not in self._all_sections:
             raise NoSectionError(section)
 
         result = []
-        for _option in self._options[section]:
-            result.append((_option, self._options[section][_option]))
+        for _option in self._all_options[section]:
+            result.append((_option, self._all_options[section][_option]))
 
         return result
 
@@ -281,7 +280,7 @@ class SimpleConfigParser:
         :param indent: The indentation for multiline values
         """
 
-        if section not in self._sections:
+        if section not in self._all_sections:
             raise NoSectionError(section)
 
         # prepare the options value and raw value depending on the multiline flag
@@ -297,7 +296,7 @@ class SimpleConfigParser:
             _raw_value: List[str] = [f"{value}\n"]
 
         # the option does not exist yet
-        if option not in self._options.get(section):
+        if option not in self._all_options.get(section):
             _option: Option = {
                 "is_multiline": _multiline,
                 "option": option,
@@ -316,30 +315,30 @@ class SimpleConfigParser:
                     _option["_raw_value"] = _raw_value
                     break
 
-        self._options[section][option] = _value
+        self._all_options[section][option] = _value
 
     def remove_option(self, section: str, option: str) -> None:
         """Remove the given option from the given section"""
 
-        if section not in self._sections:
+        if section not in self._all_sections:
             raise NoSectionError(section)
 
-        if option not in self._options.get(section):
+        if option not in self._all_options.get(section):
             raise NoOptionError(option, section)
 
         for _option in self._config[section]["body"]:
             if _option["option"] == option:
-                del self._options[section][option]
+                del self._all_options[section][option]
                 self._config[section]["body"].remove(_option)
                 break
 
     def has_section(self, section: str) -> bool:
         """Return True if the given section exists, False otherwise"""
-        return section in self._sections
+        return section in self._all_sections
 
     def has_option(self, section: str, option: str) -> bool:
         """Return True if the given option exists in the given section, False otherwise"""
-        return option in self._options.get(section)
+        return option in self._all_options.get(section)
 
     def _is_section(self, line: str) -> bool:
         """Check if the given line contains a section definition"""
@@ -347,7 +346,20 @@ class SimpleConfigParser:
 
     def _is_option(self, line: str) -> bool:
         """Check if the given line contains an option definition"""
-        return self._OPTION_RE.match(line) is not None
+
+        match: Match[str] | None = self._OPTION_RE.match(line)
+
+        if not match:
+            return False
+
+        # if there is no value, it's not a regular option but a multiline option
+        if match.group(2).strip() == "":
+            return False
+
+        if not match.group(1).strip() == "":
+            return True
+
+        return False
 
     def _is_comment(self, line: str) -> bool:
         """Check if the given line is a comment"""
@@ -360,11 +372,15 @@ class SimpleConfigParser:
     def _is_multiline_option(self, line: str) -> bool:
         """Check if the given line starts a multiline option block"""
 
-        # if the pattern doesn't match, we directly return False
-        if self._ML_OPTION_RE.match(line) is None:
+        match: Match[str] | None = self._OPTION_RE.match(line)
+
+        if not match:
             return False
 
-        return True
+        if not match.group(1).strip == "" and match.group(2).strip() == "":
+            return True
+
+        return False
 
     def _parse_config(self, content: List[str]) -> None:
         """Parse the given content and store the result in the internal state"""
@@ -396,53 +412,65 @@ class SimpleConfigParser:
     def _parse_section(self, line: str) -> None:
         """Parse a section line and store the result in the internal state"""
 
+        match: Match[str] | None = self._SECTION_RE.match(line)
+        if not match:
+            return
+
         self.in_option_block = False
-        self.curr_sect_name = self._SECTION_RE.match(line).group(1).strip()
+        self.section_name: str = match.group(1).strip()
 
         # add the section to the internal section list
-        if self.curr_sect_name in self._sections:
-            raise DuplicateSectionError(self.curr_sect_name)
-        self._sections.append(self.curr_sect_name)
+        if self.section_name in self._all_sections:
+            raise DuplicateSectionError(self.section_name)
 
-        # add the section to the internal global config state
-        self._config[self.curr_sect_name]: Section = {
-            "_raw": line,
-            "body": [],
-        }
+        self._store_internal_state_section(self.section_name, line)
+
+    def _store_internal_state_section(self, section: str, raw_value: str):
+        """Store the given section and its raw value in the internal state"""
+
+        self._all_sections.append(section)
+        self._config[section]: Section = {"_raw": raw_value, "body": []}
 
     def _parse_option(self, line: str) -> None:
         """Parse an option line and store the result in the internal state"""
 
         self.in_option_block = False
 
-        if self._options.get(self.curr_sect_name) is None:
-            self._options[self.curr_sect_name] = {}
+        match: Match[str] | None = self._OPTION_RE.match(line)
+        if not match:
+            return
 
-        # add the option to the internal option list
-        option = self._OPTION_RE.match(line).group(1).strip()
-        value = self._OPTION_RE.match(line).group(2).strip()
-        if option in self._options[self.curr_sect_name]:
-            raise DuplicateOptionError(option, self.curr_sect_name)
-        self._options[self.curr_sect_name][option] = value
+        option: str = match.group(1).strip()
+        value: str = match.group(2).strip()
 
-        # add the option to the internal global config state
-        self._add_option_to_section_body(option, value, line)
+        self._store_internal_state_option(option, value, line)
+
+    def _store_internal_state_option(self, option: str, value: str, raw_value: str):
+        """Store the given option and its raw value in the internal state"""
+
+        section_options = self._all_options.setdefault(self.section_name, {})
+
+        if option in section_options:
+            raise DuplicateOptionError(option, self.section_name)
+
+        section_options[option] = value
+        self._add_option_to_section_body(option, value, raw_value)
 
     def _parse_multiline_option(self, curr_ml_opt: str, line: str) -> None:
         """Parse a multiline option line and store the result in the internal state"""
 
-        if self._options.get(self.curr_sect_name) is None:
-            self._options[self.curr_sect_name] = {}
+        if self._all_options.get(self.section_name) is None:
+            self._all_options[self.section_name] = {}
 
-        if self._options[self.curr_sect_name].get(curr_ml_opt) is None:
-            self._options[self.curr_sect_name][curr_ml_opt] = []
+        if self._all_options[self.section_name].get(curr_ml_opt) is None:
+            self._all_options[self.section_name][curr_ml_opt] = []
 
         _cleaned_line = line.strip().strip("\n")
         if not _cleaned_line == "" and not self._is_comment(line):
-            self._options[self.curr_sect_name][curr_ml_opt].append(_cleaned_line)
+            self._all_options[self.section_name][curr_ml_opt].append(_cleaned_line)
 
         # add the option to the internal multiline option value state
-        for _option in self._config[self.curr_sect_name]["body"]:
+        for _option in self._config[self.section_name]["body"]:
             if _option["option"] == curr_ml_opt:
                 _option["is_multiline"] = True
                 _option["_raw_value"].append(line)
@@ -460,27 +488,32 @@ class SimpleConfigParser:
 
         self.in_option_block = False
 
-        if not self.curr_sect_name:
+        if not self.section_name:
             self._header.append(line)
         else:
             self._add_option_to_section_body("", "", line)
+
+    def _ensure_section_body_exists(self) -> None:
+        """
+        Ensure that the section body exists in the internal state.
+        If the section body does not exist, it is created as an empty list
+        """
+        if self.section_name not in self._config:
+            self._config[self.section_name] = {"body": []}
 
     def _add_option_to_section_body(
         self, option: str, value: str, line: str, is_multiline: bool = False
     ) -> None:
         """Add a raw option line to the internal state"""
 
-        if self._config[self.curr_sect_name].get("body") is None:
-            self._config[self.curr_sect_name]["body"]: List[Option] = []
+        self._ensure_section_body_exists()
 
-        val = [value] if value and not self._is_comment(value) else []
-        raw_val = [value] if value else []
-
-        _option: Option = {
+        new_option: Option = {
             "is_multiline": is_multiline,
             "option": option,
-            "value": val,
+            "value": [value] if value and not self._is_comment(value) else [],
             "_raw": line,
-            "_raw_value": raw_val,
         }
-        self._config[self.curr_sect_name]["body"].append(_option)
+
+        option_body = self._config[self.section_name]["body"]
+        option_body.append(new_option)
