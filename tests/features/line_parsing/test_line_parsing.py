@@ -1,7 +1,6 @@
 import pytest
-from data.test_parse_invalid_section import testcases as test_parse_invalid_section
-from data.test_parse_valid_option import testcases as test_parse_valid_option
-from data.test_parse_valid_section import testcases as test_parse_valid_section
+from data.test_parse_option import testcases as test_parse_option
+from data.test_parse_section import testcases as test_parse_valid_section
 
 from src.simple_config_parser.simple_config_parser import (
     DuplicateSectionError,
@@ -16,7 +15,7 @@ def parser():
 
 class TestLineParsing:
     @pytest.mark.parametrize("given, expected", [*test_parse_valid_section])
-    def test_parse_valid_section(self, parser, given, expected):
+    def test_parse_section(self, parser, given, expected):
         parser._parse_section(given)
 
         # Check that the internal state of the parser is correct
@@ -25,16 +24,6 @@ class TestLineParsing:
         assert parser._all_sections == [expected]
         assert parser._config[expected]["_raw"] == given
         assert parser._config[expected]["body"] == []
-
-    @pytest.mark.parametrize("given, expected", [*test_parse_invalid_section])
-    def test_parse_invalid_section(self, parser, given, expected):
-        parser._parse_section(given)
-
-        # Check that the internal state of the parser is correct
-        assert parser.section_name == expected
-        assert parser.in_option_block is False
-        assert parser._all_sections == []
-        assert parser._config == {}
 
     def test_parse_existing_section(self, parser):
         parser._parse_section("[test_section]")
@@ -52,9 +41,9 @@ class TestLineParsing:
 
     @pytest.mark.parametrize(
         "given, expected_option, expected_value",
-        [*test_parse_valid_option],
+        [*test_parse_option],
     )
-    def test_parse_valid_option(self, parser, given, expected_option, expected_value):
+    def test_parse_option(self, parser, given, expected_option, expected_value):
         section_name = "test_section"
         parser.section_name = section_name
         parser._parse_option(given)
