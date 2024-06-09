@@ -417,17 +417,17 @@ class SimpleConfigParser:
             return
 
         self.in_option_block = False
-        self.section_name: str = match.group(1).strip()
 
-        # add the section to the internal section list
-        if self.section_name in self._all_sections:
-            raise DuplicateSectionError(self.section_name)
-
-        self._store_internal_state_section(self.section_name, line)
+        section_name: str = match.group(1).strip()
+        self._store_internal_state_section(section_name, line)
 
     def _store_internal_state_section(self, section: str, raw_value: str):
         """Store the given section and its raw value in the internal state"""
 
+        if section in self._all_sections:
+            raise DuplicateSectionError(section)
+
+        self.section_name = section
         self._all_sections.append(section)
         self._config[section]: Section = {"_raw": raw_value, "body": []}
 
@@ -459,23 +459,24 @@ class SimpleConfigParser:
     def _parse_multiline_option(self, curr_ml_opt: str, line: str) -> None:
         """Parse a multiline option line and store the result in the internal state"""
 
-        if self._all_options.get(self.section_name) is None:
-            self._all_options[self.section_name] = {}
-
-        if self._all_options[self.section_name].get(curr_ml_opt) is None:
-            self._all_options[self.section_name][curr_ml_opt] = []
+        section_options = self._all_options.setdefault(self.section_name, {})
+        multiline_options = section_options.setdefault(curr_ml_opt, [])
 
         _cleaned_line = line.strip().strip("\n")
-        if not _cleaned_line == "" and not self._is_comment(line):
-            self._all_options[self.section_name][curr_ml_opt].append(_cleaned_line)
+        if _cleaned_line and not self._is_comment(line):
+            multiline_options.append(_cleaned_line)
 
         # add the option to the internal multiline option value state
+        self._ensure_section_body_exists()
         for _option in self._config[self.section_name]["body"]:
-            if _option["option"] == curr_ml_opt:
-                _option["is_multiline"] = True
-                _option["_raw_value"].append(line)
-                if not self._is_comment(line) and not _cleaned_line == "":
-                    _option["value"].append(_cleaned_line)
+            if _option.get("option") == curr_ml_opt:
+                _option.update(
+                    is_multiline=True,
+                    _raw_value=_option.get("_raw_value", []) + [line],
+                    value=_option.get("value", []) + [_cleaned_line]
+                    if _cleaned_line
+                    else _option["value"],
+                )
 
     def _parse_comment(self, line: str) -> None:
         """
@@ -499,7 +500,7 @@ class SimpleConfigParser:
         If the section body does not exist, it is created as an empty list
         """
         if self.section_name not in self._config:
-            self._config[self.section_name] = {"body": []}
+            self._config.setdefault(self.section_name, {}).setdefault("body", [])
 
     def _add_option_to_section_body(
         self, option: str, value: str, line: str, is_multiline: bool = False

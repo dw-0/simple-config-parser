@@ -11,4 +11,7 @@ testcases = [
     ("invalid_option ==", False),
     ("invalid_option :=", False),
     ("not_a_valid_option", False),
+    ("", False),
+    ("# that's a comment", False),
+    ("; that's a comment", False),
 ]

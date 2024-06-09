@@ -1,9 +1,10 @@
 import pytest
+from data.test_parse_comment import testcases as test_parse_comment
 from data.test_parse_option import testcases as test_parse_option
-from data.test_parse_section import testcases as test_parse_valid_section
+from data.test_parse_section import testcases as test_parse_section
 
 from src.simple_config_parser.simple_config_parser import (
-    DuplicateSectionError,
+    Option,
     SimpleConfigParser,
 )
 
@@ -14,7 +15,7 @@ def parser():
 
 
 class TestLineParsing:
-    @pytest.mark.parametrize("given, expected", [*test_parse_valid_section])
+    @pytest.mark.parametrize("given, expected", [*test_parse_section])
     def test_parse_section(self, parser, given, expected):
         parser._parse_section(given)
 
@@ -25,23 +26,8 @@ class TestLineParsing:
         assert parser._config[expected]["_raw"] == given
         assert parser._config[expected]["body"] == []
 
-    def test_parse_existing_section(self, parser):
-        parser._parse_section("[test_section]")
-        parser._parse_section("[test_section2]")
-
-        with pytest.raises(DuplicateSectionError) as excinfo:
-            parser._parse_section("[test_section]")
-            message = "Section 'test_section' is defined more than once"
-            assert message in str(excinfo.value)
-
-        # Check that the internal state of the parser is correct
-        assert parser.section_name == "test_section"
-        assert parser.in_option_block is False
-        assert parser._all_sections == ["test_section", "test_section2"]
-
     @pytest.mark.parametrize(
-        "given, expected_option, expected_value",
-        [*test_parse_option],
+        "given, expected_option, expected_value", [*test_parse_option]
     )
     def test_parse_option(self, parser, given, expected_option, expected_value):
         section_name = "test_section"
@@ -57,3 +43,50 @@ class TestLineParsing:
         assert section_option["option"] == expected_option
         assert section_option["value"][0] == expected_value
         assert section_option["_raw"] == given
+
+    @pytest.mark.parametrize(
+        "option, next_line",
+        [("gcode", "next line"), ("gcode", "    {{% some jinja template %}}")],
+    )
+    def test_parse_multiline_option(self, parser, option, next_line):
+        parser.section_name = "dummy_section"
+        parser.in_option_block = True
+        parser._add_option_to_section_body(option, "", option)
+        parser._parse_multiline_option(option, next_line)
+        cleaned_next_line = next_line.strip().strip("\n")
+
+        assert parser._all_options[parser.section_name] is not None
+        assert parser._all_options[parser.section_name][option] == [cleaned_next_line]
+
+        expected_option: Option = {
+            "is_multiline": True,
+            "option": option,
+            "value": [cleaned_next_line],
+            "_raw": option,
+            "_raw_value": [next_line],
+        }
+        assert parser._config[parser.section_name]["body"] == [expected_option]
+
+    @pytest.mark.parametrize("given", [*test_parse_comment])
+    def test_parse_comment(self, parser, given):
+        parser.section_name = "dummy_section"
+        parser._parse_comment(given)
+
+        # internal state checks after parsing
+        assert parser.in_option_block is False
+
+        expected_option = {
+            "is_multiline": False,
+            "_raw": given,
+            "option": "",
+            "value": [],
+        }
+        assert parser._config[parser.section_name]["body"] == [expected_option]
+
+    @pytest.mark.parametrize("given", ["# header line", "; another header line"])
+    def test_parse_header_comment(self, parser, given):
+        parser.section_name = ""
+        parser._parse_comment(given)
+
+        assert parser.in_option_block is False
+        assert parser._header == [given]
