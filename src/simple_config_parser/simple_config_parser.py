@@ -213,7 +213,7 @@ class SimpleConfigParser:
     def getfloat(
         self, section: str, option: str, fallback: float | _UNSET = _UNSET
     ) -> float:
-        return self._get_conv(section, option, int, fallback=fallback)
+        return self._get_conv(section, option, float, fallback=fallback)
 
     def getboolean(
         self, section: str, option: str, fallback: bool | _UNSET = _UNSET
