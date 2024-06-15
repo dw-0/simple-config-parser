@@ -1,7 +1,7 @@
 import pytest
-from data.test_parse_comment import testcases as test_parse_comment
-from data.test_parse_option import testcases as test_parse_option
-from data.test_parse_section import testcases as test_parse_section
+from data.case_parse_comment import testcases as case_parse_comment
+from data.case_parse_option import testcases as case_parse_option
+from data.case_parse_section import testcases as case_parse_section
 
 from src.simple_config_parser.simple_config_parser import (
     Option,
@@ -15,7 +15,7 @@ def parser():
 
 
 class TestLineParsing:
-    @pytest.mark.parametrize("given, expected", [*test_parse_section])
+    @pytest.mark.parametrize("given, expected", [*case_parse_section])
     def test_parse_section(self, parser, given, expected):
         parser._parse_section(given)
 
@@ -27,7 +27,7 @@ class TestLineParsing:
         assert parser._config[expected]["body"] == []
 
     @pytest.mark.parametrize(
-        "given, expected_option, expected_value", [*test_parse_option]
+        "given, expected_option, expected_value", [*case_parse_option]
     )
     def test_parse_option(self, parser, given, expected_option, expected_value):
         section_name = "test_section"
@@ -67,7 +67,7 @@ class TestLineParsing:
         }
         assert parser._config[parser.section_name]["body"] == [expected_option]
 
-    @pytest.mark.parametrize("given", [*test_parse_comment])
+    @pytest.mark.parametrize("given", [*case_parse_comment])
     def test_parse_comment(self, parser, given):
         parser.section_name = "dummy_section"
         parser._parse_comment(given)
