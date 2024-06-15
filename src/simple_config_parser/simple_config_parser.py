@@ -201,7 +201,7 @@ class SimpleConfigParser:
 
             return self._all_options[section][option]
         except (NoSectionError, NoOptionError):
-            if fallback is not _UNSET:
+            if fallback is _UNSET:
                 raise
             return fallback
 
