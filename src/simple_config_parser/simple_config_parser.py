@@ -109,7 +109,7 @@ class SimpleConfigParser:
         self.section_name: str = ""
         self.in_option_block: bool = False  # whether we are in a multiline option block
 
-    def read(self, file: Path):
+    def read(self, file: Path) -> None:
         """Read the given file and store the result in the internal state"""
 
         try:
@@ -127,16 +127,16 @@ class SimpleConfigParser:
         with open(filename, "w") as f:
             f.write(content)
 
-    def _construct_content(self):
+    def _construct_content(self) -> str:
         """
-        Constructs the content of the configuration file based on the internal state of the _config object.
-
-        This function builds the content of the configuration file by iterating over the sections and their options.
-        It starts by checking if a header is present and extends the content list with its elements.
-        Then, for each section, it appends the raw representation of the section to the content list.
-        If the section has a body, it iterates over its options and extends the content list with their raw representations.
-        If an option is multiline, it also extends the content list with its raw value.
-        Finally, the content list is joined into a single string and returned.
+        Constructs the content of the configuration file based on the internal state of
+        the _config object by iterating over the sections and their options. It starts
+        by checking if a header is present and extends the content list with its elements.
+        Then, for each section, it appends the raw representation of the section to the
+        content list. If the section has a body, it iterates over its options and extends
+        the content list with their raw representations. If an option is multiline, it
+        also extends the content list with its raw value. Finally, the content list is
+        joined into a single string and returned.
 
         :return: The content of the configuration file as a string
         """
@@ -222,7 +222,7 @@ class SimpleConfigParser:
             section, option, self._convert_to_boolean, fallback=fallback
         )
 
-    def _convert_to_boolean(self, value):
+    def _convert_to_boolean(self, value) -> bool:
         if value.lower() not in self.BOOLEAN_STATES:
             raise ValueError("Not a boolean: %s" % value)
         return self.BOOLEAN_STATES[value.lower()]
@@ -421,7 +421,7 @@ class SimpleConfigParser:
         section_name: str = match.group(1).strip()
         self._store_internal_state_section(section_name, line)
 
-    def _store_internal_state_section(self, section: str, raw_value: str):
+    def _store_internal_state_section(self, section: str, raw_value: str) -> None:
         """Store the given section and its raw value in the internal state"""
 
         if section in self._all_sections:
@@ -445,7 +445,9 @@ class SimpleConfigParser:
 
         self._store_internal_state_option(option, value, line)
 
-    def _store_internal_state_option(self, option: str, value: str, raw_value: str):
+    def _store_internal_state_option(
+        self, option: str, value: str, raw_value: str
+    ) -> None:
         """Store the given option and its raw value in the internal state"""
 
         section_options = self._all_options.setdefault(self.section_name, {})
