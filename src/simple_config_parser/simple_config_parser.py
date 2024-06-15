@@ -44,9 +44,9 @@ class Option(TypedDict, total=False):
 
     is_multiline: bool
     option: str
-    value: List[str]
+    value: str | List[str]
     _raw: str
-    _raw_value: List[str]
+    _raw_value: str | List[str]
 
 
 class NoSectionError(Exception):
@@ -292,8 +292,8 @@ class SimpleConfigParser:
         else:
             _multiline = False
             _raw: str = f"{option}: {value}\n"
-            _value: List[str] = [value]
-            _raw_value: List[str] = [f"{value}\n"]
+            _value: str = value
+            _raw_value: str = f"{value}\n"
 
         # the option does not exist yet
         if option not in self._all_options.get(section):
