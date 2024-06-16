@@ -311,6 +311,8 @@ class SimpleConfigParser:
         else:
             for _option in self._config[section]["body"]:
                 if _option["option"] == option:
+                    # we preserve inline comments by replacing the old value with the new one
+                    _option["_raw"] = _option["_raw"].replace(_option["value"], _value)
                     _option["value"] = _value
                     _option["_raw"] = _raw
                     _option["_raw_value"] = _raw_value
