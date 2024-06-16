@@ -86,7 +86,8 @@ class SimpleConfigParser:
     """A customized config parser targeted at handling Klipper style config files"""
 
     _SECTION_RE = re.compile(r"\s*\[(\w+ ?\w+)]\s*([#;].*)?$")
-    _OPTION_RE = re.compile(r"^\s*(\w+)\s*[:=]\s*(\w*)\s*([#;].*)?$")
+    _OPTION_RE = re.compile(r"^\s*(\w+)\s*[:=]\s*([^=:].*)\s*([#;].*)?$")
+    _MLOPTION_RE = re.compile(r"^\s*(\w+)\s*[:=]\s*([#;].*)?$")
     _COMMENT_RE = re.compile(r"^\s*([#;].*)?$")
     _EMPTY_LINE_RE = re.compile(r"^\s*$")
 
@@ -372,15 +373,12 @@ class SimpleConfigParser:
     def _is_multiline_option(self, line: str) -> bool:
         """Check if the given line starts a multiline option block"""
 
-        match: Match[str] | None = self._OPTION_RE.match(line)
+        match: Match[str] | None = self._MLOPTION_RE.match(line)
 
         if not match:
             return False
 
-        if not match.group(1).strip == "" and match.group(2).strip() == "":
-            return True
-
-        return False
+        return True
 
     def _parse_config(self, content: List[str]) -> None:
         """Parse the given content and store the result in the internal state"""
@@ -442,6 +440,13 @@ class SimpleConfigParser:
 
         option: str = match.group(1).strip()
         value: str = match.group(2).strip()
+
+        if ";" in value:
+            i = value.index(";")
+            value = value[:i].strip()
+        elif "#" in value:
+            i = value.index("#")
+            value = value[:i].strip()
 
         self._store_internal_state_option(option, value, line)
 

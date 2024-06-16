@@ -23,4 +23,8 @@ testcases = [
     ("[that_is_a_section]", False),
     ("[that_is_section two]", False),
     ("not_a_valid_option", False),
+    ("description: homing!", True),
+    ("description: inline macro :-)", True),
+    ("path: %GCODES_DIR%", True),
+    ("serial = /dev/serial/by-id/<your-mcu-id>", True),
 ]
