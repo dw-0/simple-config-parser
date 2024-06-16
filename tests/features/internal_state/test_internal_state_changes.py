@@ -66,7 +66,7 @@ class TestInternalStateChanges:
         new_option = {
             "is_multiline": False,
             "option": given_name,
-            "value": [given_value],
+            "value": given_value,
             "_raw": given_raw_value,
         }
         assert parser._config[parser.section_name]["body"] == [new_option]

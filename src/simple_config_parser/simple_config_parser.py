@@ -475,9 +475,7 @@ class SimpleConfigParser:
                 _option.update(
                     is_multiline=True,
                     _raw_value=_option.get("_raw_value", []) + [line],
-                    value=_option.get("value", []) + [_cleaned_line]
-                    if _cleaned_line
-                    else _option["value"],
+                    value=multiline_options,
                 )
 
     def _parse_comment(self, line: str) -> None:
@@ -514,7 +512,7 @@ class SimpleConfigParser:
         new_option: Option = {
             "is_multiline": is_multiline,
             "option": option,
-            "value": [value] if value and not self._is_comment(value) else [],
+            "value": value,
             "_raw": line,
         }
 

@@ -41,7 +41,7 @@ class TestLineParsing:
 
         section_option = parser._config[section_name]["body"][0]
         assert section_option["option"] == expected_option
-        assert section_option["value"][0] == expected_value
+        assert section_option["value"] == expected_value
         assert section_option["_raw"] == given
 
     @pytest.mark.parametrize(
@@ -79,7 +79,7 @@ class TestLineParsing:
             "is_multiline": False,
             "_raw": given,
             "option": "",
-            "value": [],
+            "value": "",
         }
         assert parser._config[parser.section_name]["body"] == [expected_option]
 
