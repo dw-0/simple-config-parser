@@ -185,7 +185,9 @@ class SimpleConfigParser:
 
         return self._all_options.get(section)
 
-    def get(self, section: str, option: str, fallback: str | _UNSET = _UNSET) -> str:
+    def get(
+        self, section: str, option: str, fallback: str | _UNSET = _UNSET
+    ) -> str | List[str]:
         """
         Return the value of the given option in the given section
 
