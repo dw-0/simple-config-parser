@@ -285,6 +285,7 @@ class SimpleConfigParser:
             raise NoSectionError(section)
 
         # prepare the options value and raw value depending on the multiline flag
+        _raw_value: List[str] | None = None
         if multiline or "\n" in value:
             _multiline = True
             _raw: str = f"{option}:\n"
@@ -294,7 +295,6 @@ class SimpleConfigParser:
             _multiline = False
             _raw: str = f"{option}: {value}\n"
             _value: str = value
-            _raw_value: str = f"{value}\n"
 
         # the option does not exist yet
         if option not in self._all_options.get(section):
@@ -303,7 +303,6 @@ class SimpleConfigParser:
                 "option": option,
                 "value": _value,
                 "_raw": _raw,
-                "_raw_value": _raw_value,
             }
             self._config[section]["body"].insert(0, _option)
 
@@ -314,8 +313,8 @@ class SimpleConfigParser:
                     # we preserve inline comments by replacing the old value with the new one
                     _option["_raw"] = _option["_raw"].replace(_option["value"], _value)
                     _option["value"] = _value
-                    _option["_raw"] = _raw
-                    _option["_raw_value"] = _raw_value
+                    if _raw_value is not None:
+                        _option["_raw_value"] = _raw_value
                     break
 
         self._all_options[section][option] = _value

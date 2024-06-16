@@ -84,7 +84,6 @@ class TestPublicAPI:
         assert parser._config[section]["body"][0]["option"] == option
         assert parser._config[section]["body"][0]["value"] == value
         assert parser._config[section]["body"][0]["_raw"] == f"{option}: {value}\n"
-        assert parser._config[section]["body"][0]["_raw_value"] == f"{value}\n"
 
     def test_set_existing_option(self, parser):
         section, option, value1, value2 = "section1", "option1", "value1", "value2"
@@ -98,7 +97,6 @@ class TestPublicAPI:
         assert parser._config[section]["body"][0]["option"] == option
         assert parser._config[section]["body"][0]["value"] == value2
         assert parser._config[section]["body"][0]["_raw"] == f"{option}: {value2}\n"
-        assert parser._config[section]["body"][0]["_raw_value"] == f"{value2}\n"
 
     def test_set_new_multiline_option(self, parser):
         section, option, value = "section1", "option1", "value1\nvalue2\nvalue3"
