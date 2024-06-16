@@ -304,6 +304,8 @@ class SimpleConfigParser:
                 "value": _value,
                 "_raw": _raw,
             }
+            if _raw_value is not None:
+                _option["_raw_value"] = _raw_value
             self._config[section]["body"].insert(0, _option)
 
         # the option exists and we need to update it
