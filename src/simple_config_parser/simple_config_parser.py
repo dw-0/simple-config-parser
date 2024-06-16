@@ -262,7 +262,7 @@ class SimpleConfigParser:
         option: str,
         value: str,
         multiline: bool = False,
-        indent: int = 2,
+        indent: int = 4,
     ) -> None:
         """Set the given option to the given value in the given section
 
