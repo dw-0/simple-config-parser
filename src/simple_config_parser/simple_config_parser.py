@@ -453,6 +453,7 @@ class SimpleConfigParser:
 
         self.section_name = section
         self._all_sections.append(section)
+        self._all_options[section] = {}
         self._config[section]: Section = {"_raw": raw_value, "body": []}
 
     def _parse_option(self, line: str) -> None:
