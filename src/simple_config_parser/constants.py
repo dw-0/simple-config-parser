@@ -14,7 +14,7 @@ import re
 #  - the second section marker MAY be followed by any amount of whitespace characters
 #  - the second section marker MAY be followed by a # or ; - it is the comment marker
 #  - the inline comment MAY be of any length and character
-SECTION_RE = re.compile(r"\[(\S.*\S|\S)]\s*([#;].*)?$")
+SECTION_RE = re.compile(r"^\[(\S.*\S|\S)]\s*([#;].*)?$")
 
 # definition of option line:
 #  - the line MUST start with a word - it is the option name
