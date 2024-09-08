@@ -28,7 +28,7 @@ SECTION_RE = re.compile(r"\[(\S.*\S|\S)]\s*([#;].*)?$")
 #  - the inline comment MAY be of any length and character
 OPTION_RE = re.compile(r"^([^:=\s]+)\s?[:=]\s*([^=:].*)\s*([#;].*)?$")
 
-# definition of multiline option line:
+# definition of options block start line:
 #  - the line MUST start with a word - it is the option name
 #  - the option name MUST be followed by a colon or an equal sign - it is the separator
 #  - the separator MUST NOT be followed by a value
@@ -36,7 +36,7 @@ OPTION_RE = re.compile(r"^([^:=\s]+)\s?[:=]\s*([^=:].*)\s*([#;].*)?$")
 #    - the separator MUST NOT be directly followed by a colon or equal sign
 #    - the separator MAY be followed by a # or ; - it is the comment marker
 #  - the inline comment MAY be of any length and character
-MLOPTION_RE = re.compile(r"^([^:=\s]+)\s*[:=]\s*([#;].*)?$")
+OPTIONS_BLOCK_START_RE = re.compile(r"^([^;#:=\s]+)\s*[:=]\s*([#;].*)?$")
 
 # definition of comment line:
 #  - the line MAY start with any amount of whitespace characters
