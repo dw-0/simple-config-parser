@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Dict, List
 
 from src.simple_config_parser.constants import (
+    EMPTY_LINE_RE,
     LINE_COMMENT_RE,
     OPTION_RE,
     OPTIONS_BLOCK_START_RE,
@@ -49,3 +50,8 @@ class SimpleConfigParser:
         """Wheter or not the given line matches the definition of a comment"""
 
         return LINE_COMMENT_RE.match(line) is not None
+
+    def _match_empty_line(self, line: str) -> None:
+        """Wheter or not the given line matches the definition of an empty line"""
+
+        return EMPTY_LINE_RE.match(line) is not None
