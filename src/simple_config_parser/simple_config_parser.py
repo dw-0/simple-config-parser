@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from src.simple_config_parser.constants import SECTION_RE
+from src.simple_config_parser.constants import OPTION_RE, SECTION_RE
 
 
 # noinspection PyMethodMayBeStatic
@@ -29,3 +29,8 @@ class SimpleConfigParser:
         """Wheter or not the given line matches the definition of a section"""
 
         return SECTION_RE.match(line) is not None
+
+    def _match_option(self, line: str) -> None:
+        """Wheter or not the given line matches the definition of an option"""
+
+        return OPTION_RE.match(line) is not None

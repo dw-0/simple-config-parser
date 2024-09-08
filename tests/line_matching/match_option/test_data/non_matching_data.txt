@@ -1,0 +1,7 @@
+[section]
+[section with spaces]
+[section with spaces and comments] ; comment 1
+[section with spaces and comments] # comment 2
+ indented_option: value
+option_with_no_value:
+ indented_option_with_no_value:

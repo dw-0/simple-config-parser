@@ -207,7 +207,6 @@ screw1_fine_adjust:
 screw2:
 screw2_name:
 screw2_fine_adjust:
-...
 horizontal_move_z: 5
 probe_height: 0
 speed: 50
@@ -217,7 +216,6 @@ screw1:
 screw1_name:
 screw2:
 screw2_name:
-...
 speed: 50
 horizontal_move_z: 5
 screw_thread: CW-M3
