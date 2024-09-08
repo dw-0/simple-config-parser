@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Dict, List
 
 from src.simple_config_parser.constants import (
+    LINE_COMMENT_RE,
     OPTION_RE,
     OPTIONS_BLOCK_START_RE,
     SECTION_RE,
@@ -43,3 +44,8 @@ class SimpleConfigParser:
         """Wheter or not the given line matches the definition of a multiline option"""
 
         return OPTIONS_BLOCK_START_RE.match(line) is not None
+
+    def _match_line_comment(self, line: str) -> None:
+        """Wheter or not the given line matches the definition of a comment"""
+
+        return LINE_COMMENT_RE.match(line) is not None

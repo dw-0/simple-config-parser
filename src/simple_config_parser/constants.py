@@ -43,7 +43,7 @@ OPTIONS_BLOCK_START_RE = re.compile(r"^([^;#:=\s]+)\s*[:=]\s*([#;].*)?$")
 #  - the line MUST contain a # or ; - it is the comment marker
 #  - the comment marker MAY be followed by any amount of whitespace characters
 #  - the comment MAY be of any length and character
-COMMENT_RE = re.compile(r"^\s*([#;].*)?$")
+LINE_COMMENT_RE = re.compile(r"^\s*[#;].*")
 
 # definition of empty line:
 #  - the line MUST contain only whitespace characters
