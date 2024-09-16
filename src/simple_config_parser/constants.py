@@ -26,8 +26,7 @@ SECTION_RE = re.compile(r"^\[(\S.*\S|\S)]\s*([#;].*)?$")
 #    - the value MAY contain any amount of trailing whitespaces
 #    - the value MAY be followed by a # or ; - it is the comment marker
 #  - the inline comment MAY be of any length and character
-OPTION_RE = re.compile(r"^([^;#:=\s]+)\s?[:=]\s*([^=:].*)\s*([#;].*)?$")
-
+OPTION_RE = re.compile(r"^([^;#:=\s]+)\s?[:=]\s*([^;#:=\s][^;#]*?)\s*([#;].*)?$")
 # definition of options block start line:
 #  - the line MUST start with a word - it is the option name
 #  - the option name MUST be followed by a colon or an equal sign - it is the separator
@@ -59,3 +58,6 @@ BOOLEAN_STATES = {
     "false": False,
     "off": False,
 }
+
+HEADER_IDENT = "#_header"
+COLLECTOR_IDENT = "#_coll_"
