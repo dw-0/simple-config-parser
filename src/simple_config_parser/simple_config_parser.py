@@ -122,3 +122,24 @@ class SimpleConfigParser:
                 self._parse_line(line)
 
         # print(json.dumps(self.config, indent=4))
+
+    def sections(self) -> List[str]:
+        """Return a list of all section names, but exclude HEADER_IDENT and COLLECTOR_IDENT"""
+
+        return list(
+            filter(
+                lambda section: section not in {HEADER_IDENT, COLLECTOR_IDENT},
+                self.config.keys(),
+            )
+        )
+
+    def options(self, section: str) -> List[str]:
+        """Return a list of all option names for a given section"""
+
+        return list(
+            filter(
+                lambda option: option != "_raw"
+                and not option.startswith(COLLECTOR_IDENT),
+                self.config[section].keys(),
+            )
+        )

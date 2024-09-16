@@ -13,8 +13,8 @@ from src.simple_config_parser.constants import COLLECTOR_IDENT, HEADER_IDENT
 from src.simple_config_parser.simple_config_parser import SimpleConfigParser
 from tests.utils import load_testdata_from_file
 
-BASE_DIR = Path(__file__).parent.joinpath("test_data")
-TEST_DATA_PATH = BASE_DIR.joinpath("test_config.cfg")
+BASE_DIR = Path(__file__).parent.parent.joinpath("assets")
+TEST_DATA_PATH = BASE_DIR.joinpath("test_config_1.cfg")
 
 
 @pytest.fixture
