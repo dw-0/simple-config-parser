@@ -190,14 +190,17 @@ class SimpleConfigParser:
             self.add_section(section)
 
         if not self.has_option(section, option):
-            new_option = (
-                {"_raw": f"{option}:"}
+            self.config[section][option] = {
+                "_raw": f"{option}:"
                 if isinstance(value, list)
-                else {"_raw": f"{option}: {value}"}
-            )
-            self.config[section][option] = new_option
-
-        self.config[section][option]["value"] = value
+                else f"{option}: {value}",
+                "value": value,
+            }
+        else:
+            opt = self.config[section][option]
+            if not isinstance(value, list):
+                opt["_raw"] = opt["_raw"].replace(opt["value"], value)
+            opt["value"] = value
 
     def remove_option(self, section: str, option: str) -> None:
         """Remove an option from a section"""

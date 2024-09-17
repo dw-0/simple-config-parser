@@ -158,13 +158,17 @@ def test_getfloat_fallback(parser):
     assert parser.getfloat("section_1", "option_128", 1.234) == 1.234
 
 
-def test_set_option(parser):
+def test_set_existing_option(parser):
     parser.set_option("section_1", "new_option", "new_value")
     assert parser.getval("section_1", "new_option") == "new_value"
+    assert parser.config["section_1"]["new_option"]["_raw"] == "new_option: new_value"
 
     parser.set_option("section_1", "new_option", "new_value_2")
     assert parser.getval("section_1", "new_option") == "new_value_2"
+    assert parser.config["section_1"]["new_option"]["_raw"] == "new_option: new_value_2"
 
+
+def test_set_new_option(parser):
     parser.set_option("new_section", "very_new_option", "very_new_value")
     assert parser.has_section("new_section") is True
     assert parser.getval("new_section", "very_new_option") == "very_new_value"
