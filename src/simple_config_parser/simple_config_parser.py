@@ -21,15 +21,33 @@ from src.simple_config_parser.constants import (
     SECTION_RE,
 )
 
+_UNSET = object()
+
+
+class NoSectionError(Exception):
+    """Raised when a section is not defined"""
+
+    def __init__(self, section: str):
+        msg = f"Section '{section}' is not defined"
+        super().__init__(msg)
+
+
+class NoOptionError(Exception):
+    """Raised when an option is not defined in a section"""
+
+    def __init__(self, option: str, section: str):
+        msg = f"Option '{option}' in section '{section}' is not defined"
+        super().__init__(msg)
+
 
 # noinspection PyMethodMayBeStatic
 class SimpleConfigParser:
     """A customized config parser targeted at handling Klipper style config files"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._init_state()
 
-    def _init_state(self):
+    def _init_state(self) -> None:
         """Initialize the internal state."""
 
         self.header: List[str] = []
@@ -84,10 +102,10 @@ class SimpleConfigParser:
             self.current_collector = None
             option = OPTIONS_BLOCK_START_RE.match(line).group(1)
             self.current_opt_block = option
-            self.config[self.current_section][option] = {"_raw": line, "values": []}
+            self.config[self.current_section][option] = {"_raw": line, "value": []}
 
         elif self.current_opt_block is not None:
-            self.config[self.current_section][self.current_opt_block]["values"].append(
+            self.config[self.current_section][self.current_opt_block]["value"].append(
                 line
             )
 
@@ -113,7 +131,7 @@ class SimpleConfigParser:
                     section[self.current_collector] = []
                 section[self.current_collector].append(line)
 
-    def read_file(self, file: Path):
+    def read_file(self, file: Path) -> None:
         """Read and parse a config file"""
 
         self._init_state()
@@ -143,3 +161,23 @@ class SimpleConfigParser:
                 self.config[section].keys(),
             )
         )
+
+    def getval(
+        self, section: str, option: str, fallback: str | _UNSET = _UNSET
+    ) -> str | List[str]:
+        """
+        Return the value of the given option in the given section
+
+        If the key is not found and 'fallback' is provided, it is used as
+        a fallback value.
+        """
+        try:
+            if section not in self.get_sections():
+                raise NoSectionError(section)
+            if option not in self.get_options(section):
+                raise NoOptionError(option, section)
+            return self.config[section][option]["value"]
+        except (NoSectionError, NoOptionError):
+            if fallback is _UNSET:
+                raise
+            return fallback
