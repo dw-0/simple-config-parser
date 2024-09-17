@@ -181,6 +181,24 @@ class SimpleConfigParser:
         """Check if an option exists in a section"""
         return self.has_section(section) and option in self.get_options(section)
 
+    def set_option(self, section: str, option: str, value: str | List[str]) -> None:
+        """
+        Set the value of an option in a section. If the section does not exist,
+        it is created. If the option does not exist, it is created.
+        """
+        if not self.has_section(section):
+            self.add_section(section)
+
+        if not self.has_option(section, option):
+            new_option = (
+                {"_raw": f"{option}:"}
+                if isinstance(value, list)
+                else {"_raw": f"{option}: {value}"}
+            )
+            self.config[section][option] = new_option
+
+        self.config[section][option]["value"] = value
+
     def getval(
         self, section: str, option: str, fallback: str | _UNSET = _UNSET
     ) -> str | List[str]:

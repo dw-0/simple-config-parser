@@ -156,3 +156,23 @@ def test_getfloat_from_boolean(parser):
 
 def test_getfloat_fallback(parser):
     assert parser.getfloat("section_1", "option_128", 1.234) == 1.234
+
+
+def test_set_option(parser):
+    parser.set_option("section_1", "new_option", "new_value")
+    assert parser.getval("section_1", "new_option") == "new_value"
+
+    parser.set_option("section_1", "new_option", "new_value_2")
+    assert parser.getval("section_1", "new_option") == "new_value_2"
+
+    parser.set_option("new_section", "very_new_option", "very_new_value")
+    assert parser.has_section("new_section") is True
+    assert parser.getval("new_section", "very_new_option") == "very_new_value"
+
+    parser.set_option("section_2", "array_option", ["value_1", "value_2", "value_3"])
+    assert parser.getval("section_2", "array_option") == [
+        "value_1",
+        "value_2",
+        "value_3",
+    ]
+    assert parser.config["section_2"]["array_option"]["_raw"] == "array_option:"
