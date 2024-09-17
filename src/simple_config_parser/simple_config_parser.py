@@ -163,6 +163,10 @@ class SimpleConfigParser:
 
         self.config[section] = {"_raw": f"[{section}]"}
 
+    def remove_section(self, section: str) -> None:
+        """Remove a section from the config"""
+        self.config.pop(section, None)
+
     def get_options(self, section: str) -> List[str]:
         """Return a list of all option names for a given section"""
         return list(

@@ -60,3 +60,11 @@ def test_add_section(parser):
 def test_add_section_duplicate(parser):
     with pytest.raises(DuplicateSectionError):
         parser.add_section("section_1")
+
+
+def test_remove_section(parser):
+    pre_remove_count = len(parser.get_sections())
+    parser.remove_section("section_1")
+    assert parser.has_section("section_1") is False
+    assert len(parser.get_sections()) == pre_remove_count - 1
+    assert "section_1" not in parser.config
