@@ -36,3 +36,8 @@ def test_get_sections(parser):
     assert expected_keys.issubset(
         parser.get_sections()
     ), f"Expected keys: {expected_keys}, got: {parser.get_sections()}"
+
+
+def test_has_section(parser):
+    assert parser.has_section("section_1") is True
+    assert parser.has_section("not_available") is False

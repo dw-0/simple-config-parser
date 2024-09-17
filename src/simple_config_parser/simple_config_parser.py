@@ -50,7 +50,6 @@ class SimpleConfigParser:
 
     def _init_state(self) -> None:
         """Initialize the internal state."""
-
         self.header: List[str] = []
         self.config: Dict = {}
         self._count: int = 0
@@ -61,27 +60,22 @@ class SimpleConfigParser:
 
     def _match_section(self, line: str) -> bool:
         """Wheter or not the given line matches the definition of a section"""
-
         return SECTION_RE.match(line) is not None
 
     def _match_option(self, line: str) -> bool:
         """Wheter or not the given line matches the definition of an option"""
-
         return OPTION_RE.match(line) is not None
 
     def _match_options_block_start(self, line: str) -> bool:
         """Wheter or not the given line matches the definition of a multiline option"""
-
         return OPTIONS_BLOCK_START_RE.match(line) is not None
 
     def _match_line_comment(self, line: str) -> bool:
         """Wheter or not the given line matches the definition of a comment"""
-
         return LINE_COMMENT_RE.match(line) is not None
 
     def _match_empty_line(self, line: str) -> bool:
         """Wheter or not the given line matches the definition of an empty line"""
-
         return EMPTY_LINE_RE.match(line) is not None
 
     def _parse_line(self, line: str) -> None:
@@ -134,7 +128,6 @@ class SimpleConfigParser:
 
     def read_file(self, file: Path) -> None:
         """Read and parse a config file"""
-
         self._init_state()
         with open(file, "r") as file:
             for line in file:
@@ -144,7 +137,6 @@ class SimpleConfigParser:
 
     def get_sections(self) -> List[str]:
         """Return a list of all section names, but exclude HEADER_IDENT and COLLECTOR_IDENT"""
-
         return list(
             filter(
                 lambda section: section not in {HEADER_IDENT, COLLECTOR_IDENT},
@@ -152,9 +144,12 @@ class SimpleConfigParser:
             )
         )
 
+    def has_section(self, section: str) -> bool:
+        """Check if a section exists"""
+        return section in self.get_sections()
+
     def get_options(self, section: str) -> List[str]:
         """Return a list of all option names for a given section"""
-
         return list(
             filter(
                 lambda option: option != "_raw"
@@ -162,6 +157,10 @@ class SimpleConfigParser:
                 self.config[section].keys(),
             )
         )
+
+    def has_option(self, section: str, option: str) -> bool:
+        """Check if an option exists in a section"""
+        return self.has_section(section) and option in self.get_options(section)
 
     def getval(
         self, section: str, option: str, fallback: str | _UNSET = _UNSET

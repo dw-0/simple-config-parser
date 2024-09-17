@@ -50,6 +50,13 @@ def test_get_options(parser):
         )
 
 
+def test_has_option(parser):
+    assert parser.has_option("section_1", "option_1") is True
+    assert parser.has_option("section_1", "option_128") is False
+    # section does not exist:
+    assert parser.has_option("section_128", "option_1") is False
+
+
 def test_getval(parser):
     # test regular option values
     assert parser.getval("section_1", "option_1") == "value_1"
