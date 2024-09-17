@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 
-from src.simple_config_parser.constants import COLLECTOR_IDENT
 from src.simple_config_parser.simple_config_parser import SimpleConfigParser
 from tests.utils import load_testdata_from_file
 
@@ -26,20 +25,14 @@ def parser():
     return parser
 
 
-def test_get_options(parser):
-    expected_options = {
-        "section_1": {"option_1"},
-        "section_2": {"option_2"},
-        "section_3": {"option_3"},
-        "section_4": {"option_4"},
-        "section number 5": {"option_5", "multi_option", "option_5_1"},
+def test_get_sections(parser):
+    expected_keys = {
+        "section_1",
+        "section_2",
+        "section_3",
+        "section_4",
+        "section number 5",
     }
-
-    for section, options in expected_options.items():
-        assert options.issubset(
-            parser.options(section)
-        ), f"Expected options: {options} in section: {section}, got: {parser.options(section)}"
-        assert "_raw" not in parser.options(section)
-        assert all(
-            not option.startswith(COLLECTOR_IDENT) for option in parser.options(section)
-        )
+    assert expected_keys.issubset(
+        parser.get_sections()
+    ), f"Expected keys: {expected_keys}, got: {parser.get_sections()}"

@@ -113,7 +113,7 @@ class SimpleConfigParser:
                     section[self.current_collector] = []
                 section[self.current_collector].append(line)
 
-    def read(self, file: Path):
+    def read_file(self, file: Path):
         """Read and parse a config file"""
 
         self._init_state()
@@ -123,7 +123,7 @@ class SimpleConfigParser:
 
         # print(json.dumps(self.config, indent=4))
 
-    def sections(self) -> List[str]:
+    def get_sections(self) -> List[str]:
         """Return a list of all section names, but exclude HEADER_IDENT and COLLECTOR_IDENT"""
 
         return list(
@@ -133,7 +133,7 @@ class SimpleConfigParser:
             )
         )
 
-    def options(self, section: str) -> List[str]:
+    def get_options(self, section: str) -> List[str]:
         """Return a list of all option names for a given section"""
 
         return list(
