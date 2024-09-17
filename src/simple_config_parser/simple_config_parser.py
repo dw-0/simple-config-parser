@@ -9,9 +9,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List
+from typing import Callable, Dict, List
 
 from src.simple_config_parser.constants import (
+    BOOLEAN_STATES,
     COLLECTOR_IDENT,
     EMPTY_LINE_RE,
     HEADER_IDENT,
@@ -181,3 +182,46 @@ class SimpleConfigParser:
             if fallback is _UNSET:
                 raise
             return fallback
+
+    def getint(self, section: str, option: str, fallback: int | _UNSET = _UNSET) -> int:
+        """Return the value of the given option in the given section as an int"""
+        return self._get_conv(section, option, int, fallback=fallback)
+
+    def getfloat(
+        self, section: str, option: str, fallback: float | _UNSET = _UNSET
+    ) -> float:
+        """Return the value of the given option in the given section as a float"""
+        return self._get_conv(section, option, float, fallback=fallback)
+
+    def getboolean(
+        self, section: str, option: str, fallback: bool | _UNSET = _UNSET
+    ) -> bool:
+        """Return the value of the given option in the given section as a boolean"""
+        return self._get_conv(
+            section, option, self._convert_to_boolean, fallback=fallback
+        )
+
+    def _convert_to_boolean(self, value: str) -> bool:
+        """Convert a string to a boolean"""
+        if isinstance(value, bool):
+            return value
+        if value.lower() not in BOOLEAN_STATES:
+            raise ValueError("Not a boolean: %s" % value)
+        return BOOLEAN_STATES[value.lower()]
+
+    def _get_conv(
+        self,
+        section: str,
+        option: str,
+        conv: Callable[[str], int | float | bool],
+        fallback: _UNSET = _UNSET,
+    ) -> int | float | bool:
+        """Return the value of the given option in the given section as a converted value"""
+        try:
+            return conv(self.getval(section, option, fallback))
+        except ValueError as e:
+            if fallback is not _UNSET:
+                return fallback
+            raise ValueError(
+                f"Cannot convert {self.getval(section, option)} to {conv.__name__}"
+            ) from e

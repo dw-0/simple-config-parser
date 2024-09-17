@@ -75,3 +75,77 @@ def test_getval_exceptions(parser):
 
     with pytest.raises(NoOptionError):
         parser.getval("section_1", "option_128")
+
+
+def test_getint(parser):
+    value = parser.getint("section_1", "option_1_2")
+    assert isinstance(value, int)
+
+
+def test_getint_from_val(parser):
+    with pytest.raises(ValueError):
+        parser.getint("section_1", "option_1")
+
+
+def test_getint_from_float(parser):
+    with pytest.raises(ValueError):
+        parser.getint("section_1", "option_1_3")
+
+
+def test_getint_from_boolean(parser):
+    with pytest.raises(ValueError):
+        parser.getint("section_1", "option_1_1")
+
+
+def test_getint_fallback(parser):
+    assert parser.getint("section_1", "option_128", 128) == 128
+
+
+def test_getboolean(parser):
+    value = parser.getboolean("section_1", "option_1_1")
+    assert isinstance(value, bool)
+    assert value is True or value is False
+
+
+def test_getboolean_from_val(parser):
+    with pytest.raises(ValueError):
+        parser.getboolean("section_1", "option_1")
+
+
+def test_getboolean_from_int(parser):
+    with pytest.raises(ValueError):
+        parser.getboolean("section_1", "option_1_2")
+
+
+def test_getboolean_from_float(parser):
+    with pytest.raises(ValueError):
+        parser.getboolean("section_1", "option_1_3")
+
+
+def test_getboolean_fallback(parser):
+    assert parser.getboolean("section_1", "option_128", True) is True
+    assert parser.getboolean("section_1", "option_128", False) is False
+
+
+def test_getfloat(parser):
+    value = parser.getfloat("section_1", "option_1_3")
+    assert isinstance(value, float)
+
+
+def test_getfloat_from_val(parser):
+    with pytest.raises(ValueError):
+        parser.getfloat("section_1", "option_1")
+
+
+def test_getfloat_from_int(parser):
+    value = parser.getfloat("section_1", "option_1_2")
+    assert isinstance(value, float)
+
+
+def test_getfloat_from_boolean(parser):
+    with pytest.raises(ValueError):
+        parser.getfloat("section_1", "option_1_1")
+
+
+def test_getfloat_fallback(parser):
+    assert parser.getfloat("section_1", "option_128", 1.234) == 1.234
