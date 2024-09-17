@@ -9,7 +9,10 @@ from pathlib import Path
 
 import pytest
 
-from src.simple_config_parser.simple_config_parser import SimpleConfigParser
+from src.simple_config_parser.simple_config_parser import (
+    DuplicateSectionError,
+    SimpleConfigParser,
+)
 from tests.utils import load_testdata_from_file
 
 BASE_DIR = Path(__file__).parent.parent.joinpath("assets")
@@ -41,3 +44,19 @@ def test_get_sections(parser):
 def test_has_section(parser):
     assert parser.has_section("section_1") is True
     assert parser.has_section("not_available") is False
+
+
+def test_add_section(parser):
+    pre_add_count = len(parser.get_sections())
+    parser.add_section("new_section")
+    assert parser.has_section("new_section") is True
+    assert len(parser.get_sections()) == pre_add_count + 1
+
+    new_section = parser.config["new_section"]
+    assert isinstance(new_section, dict)
+    assert new_section["_raw"] == "[new_section]"
+
+
+def test_add_section_duplicate(parser):
+    with pytest.raises(DuplicateSectionError):
+        parser.add_section("section_1")

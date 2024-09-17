@@ -33,6 +33,14 @@ class NoSectionError(Exception):
         super().__init__(msg)
 
 
+class DuplicateSectionError(Exception):
+    """Raised when a section is defined more than once"""
+
+    def __init__(self, section: str):
+        msg = f"Section '{section}' is defined more than once"
+        super().__init__(msg)
+
+
 class NoOptionError(Exception):
     """Raised when an option is not defined in a section"""
 
@@ -147,6 +155,13 @@ class SimpleConfigParser:
     def has_section(self, section: str) -> bool:
         """Check if a section exists"""
         return section in self.get_sections()
+
+    def add_section(self, section: str) -> None:
+        """Add a new section to the config"""
+        if section in self.get_sections():
+            raise DuplicateSectionError(section)
+
+        self.config[section] = {"_raw": f"[{section}]"}
 
     def get_options(self, section: str) -> List[str]:
         """Return a list of all option names for a given section"""
