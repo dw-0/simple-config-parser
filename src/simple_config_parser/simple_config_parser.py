@@ -199,6 +199,10 @@ class SimpleConfigParser:
 
         self.config[section][option]["value"] = value
 
+    def remove_option(self, section: str, option: str) -> None:
+        """Remove an option from a section"""
+        self.config[section].pop(option, None)
+
     def getval(
         self, section: str, option: str, fallback: str | _UNSET = _UNSET
     ) -> str | List[str]:

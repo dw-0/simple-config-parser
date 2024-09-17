@@ -176,3 +176,8 @@ def test_set_option(parser):
         "value_3",
     ]
     assert parser.config["section_2"]["array_option"]["_raw"] == "array_option:"
+
+
+def test_remove_option(parser):
+    parser.remove_option("section_1", "option_1")
+    assert parser.has_option("section_1", "option_1") is False
