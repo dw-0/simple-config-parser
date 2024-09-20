@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable, Dict, List
 
-from src.simple_config_parser.constants import (
+from ..simple_config_parser.constants import (
     BOOLEAN_STATES,
     COLLECTOR_IDENT,
     EMPTY_LINE_RE,
