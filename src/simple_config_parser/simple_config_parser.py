@@ -54,10 +54,6 @@ class SimpleConfigParser:
     """A customized config parser targeted at handling Klipper style config files"""
 
     def __init__(self) -> None:
-        self._init_state()
-
-    def _init_state(self) -> None:
-        """Initialize the internal state."""
         self.header: List[str] = []
         self.config: Dict = {}
         self._count: int = 0
@@ -136,12 +132,45 @@ class SimpleConfigParser:
 
     def read_file(self, file: Path) -> None:
         """Read and parse a config file"""
-        self._init_state()
         with open(file, "r") as file:
             for line in file:
                 self._parse_line(line)
 
         # print(json.dumps(self.config, indent=4))
+
+    def write_file(self, file: Path) -> None:
+        """Write the current config to the config file"""
+        if not file:
+            raise ValueError("No config file specified")
+
+        with open(file, "w") as file:
+            self._write_header(file)
+            self._write_sections(file)
+
+    def _write_header(self, file) -> None:
+        """Write the header to the config file"""
+        for line in self.config.get(HEADER_IDENT, []):
+            file.write(line)
+
+    def _write_sections(self, file) -> None:
+        """Write the sections to the config file"""
+        for section in self.get_sections():
+            for key, value in self.config[section].items():
+                self._write_section_content(file, key, value)
+
+    def _write_section_content(self, file, key, value) -> None:
+        """Write the content of a section to the config file"""
+        if key == "_raw":
+            file.write(value)
+        elif key.startswith(COLLECTOR_IDENT):
+            for line in value:
+                file.write(line)
+        elif isinstance(value["value"], list):
+            file.write(value["_raw"])
+            for line in value["value"]:
+                file.write(line)
+        else:
+            file.write(value["_raw"])
 
     def get_sections(self) -> List[str]:
         """Return a list of all section names, but exclude HEADER_IDENT and COLLECTOR_IDENT"""
