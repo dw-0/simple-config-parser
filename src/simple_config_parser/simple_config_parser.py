@@ -192,10 +192,10 @@ class SimpleConfigParser:
         self.config[section] = {"_raw": f"[{section}]\n"}
 
     def _check_set_section_spacing(self):
-        prev_section = self.get_sections()[-1]
-        prev_section_content = self.config[prev_section]
-        last_item = list(prev_section_content.keys())[-1]
-        if last_item.startswith("#_") and last_item.keys()[-1] != "\n":
+        prev_section: str = self.get_sections()[-1]
+        prev_section_content: Dict = self.config[prev_section]
+        last_item: str = list(prev_section_content.keys())[-1]
+        if last_item.startswith("#_") and prev_section_content[last_item][-1] != "\n":
             prev_section_content[last_item].append("\n")
         else:
             prev_section_content[self._generate_rand_id()] = ["\n"]
