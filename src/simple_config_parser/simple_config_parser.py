@@ -269,7 +269,19 @@ class SimpleConfigParser:
                 raise NoSectionError(section)
             if option not in self.get_options(section):
                 raise NoOptionError(option, section)
-            return self.config[section][option]["value"]
+
+            raw_value = self.config[section][option]["value"]
+            if isinstance(raw_value, str) and raw_value.endswith("\n"):
+                return raw_value[:-1].strip()
+            elif isinstance(raw_value, list):
+                values: List[str] = []
+                for i, val in enumerate(raw_value):
+                    val = val.strip().strip("\n")
+                    if len(val) < 1:
+                        continue
+                    values.append(val.strip())
+                return values
+            return str(raw_value)
         except (NoSectionError, NoOptionError):
             if fallback is _UNSET:
                 raise
