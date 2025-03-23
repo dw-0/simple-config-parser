@@ -15,7 +15,7 @@ from src.simple_config_parser.simple_config_parser import (
 
 BASE_DIR = Path(__file__).parent.parent.joinpath("assets")
 TEST_DATA_PATH = BASE_DIR.joinpath("test_config_1.cfg")
-# TEST_DATA_PATH_2 = BASE_DIR.joinpath("test_config_1_write.cfg")
+TEST_DATA_PATH_2 = BASE_DIR.joinpath("test_config_1_write.cfg")
 
 
 def test_write_file_exception():
@@ -28,7 +28,7 @@ def test_write_to_file(tmp_path):
     tmp_file = Path(tmp_path).joinpath("tmp_config.cfg")
     parser1 = SimpleConfigParser()
     parser1.read_file(TEST_DATA_PATH)
-    # parser1.write_file(TEST_DATA_PATH_2)
+    parser1.write_file(TEST_DATA_PATH_2)
     parser1.write_file(tmp_file)
 
     parser2 = SimpleConfigParser()
