@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from ..simple_config_parser.constants import (
     BOOLEAN_STATES,
@@ -24,8 +24,6 @@ from ..simple_config_parser.constants import (
     SECTION_RE,
     LineType,
 )
-
-_UNSET = object()
 
 
 class NoSectionError(Exception):
@@ -68,8 +66,8 @@ class SimpleConfigParser:
         self.header: List[str] = []
         self.save_config_block: List[str] = []
         self.config: Dict = {}
-        self.current_section: str | None = None
-        self.current_opt_block: str | None = None
+        self.current_section: Union[str, None] = None
+        self.current_opt_block: Union[str, None] = None
         self.in_option_block: bool = False
 
     def _match_section(self, line: str) -> bool:
@@ -173,7 +171,7 @@ class SimpleConfigParser:
             for line in file:
                 self._parse_line(line)
 
-    def write_file(self, path: str | Path) -> None:
+    def write_file(self, path: Union[str, Path]) -> None:
         """Write the config to a file"""
         if path is None:
             raise ValueError("File path cannot be None")
@@ -289,7 +287,9 @@ class SimpleConfigParser:
         """Check if an option exists in a section"""
         return self.has_section(section) and option in self.get_options(section)
 
-    def set_option(self, section: str, option: str, value: str | List[str]) -> None:
+    def set_option(
+        self, section: str, option: str, value: Union[str, List[str]]
+    ) -> None:
         """
         Set the value of an option in a section. If the section does not exist,
         it is created. If the option does not exist, it is created.
@@ -352,7 +352,7 @@ class SimpleConfigParser:
                     elements.pop(i)
                     break
 
-    def getval(self, section: str, option: str, fallback: str | _UNSET = _UNSET) -> str:
+    def getval(self, section: str, option: str, fallback: Optional[str] = None) -> str:
         """
         Return the value of the given option in the given section
 
@@ -374,12 +374,12 @@ class SimpleConfigParser:
             return ""
 
         except (NoSectionError, NoOptionError):
-            if fallback is _UNSET:
+            if fallback is None:
                 raise
             return fallback
 
     def getvals(
-        self, section: str, option: str, fallback: List[str] | _UNSET = _UNSET
+        self, section: str, option: str, fallback: Optional[List[str]] = None
     ) -> List[str]:
         """
         Return the values of the given multi-line option in the given section
@@ -402,22 +402,22 @@ class SimpleConfigParser:
             return []
 
         except (NoSectionError, NoOptionError):
-            if fallback is _UNSET:
+            if fallback is None:
                 raise
             return fallback
 
-    def getint(self, section: str, option: str, fallback: int | _UNSET = _UNSET) -> int:
+    def getint(self, section: str, option: str, fallback: Optional[int] = None) -> int:
         """Return the value of the given option in the given section as an int"""
         return self._get_conv(section, option, int, fallback=fallback)
 
     def getfloat(
-        self, section: str, option: str, fallback: float | _UNSET = _UNSET
+        self, section: str, option: str, fallback: Optional[float] = None
     ) -> float:
         """Return the value of the given option in the given section as a float"""
         return self._get_conv(section, option, float, fallback=fallback)
 
     def getboolean(
-        self, section: str, option: str, fallback: bool | _UNSET = _UNSET
+        self, section: str, option: str, fallback: Optional[bool] = None
     ) -> bool:
         """Return the value of the given option in the given section as a boolean"""
         return self._get_conv(
@@ -436,14 +436,14 @@ class SimpleConfigParser:
         self,
         section: str,
         option: str,
-        conv: Callable[[str], int | float | bool],
-        fallback: _UNSET = _UNSET,
-    ) -> int | float | bool:
+        conv: Callable[[str], Union[int, float, bool]],
+        fallback: Optional[Any],
+    ) -> Union[int, float, bool]:
         """Return the value of the given option in the given section as a converted value"""
         try:
             return conv(self.getval(section, option, fallback))
         except (ValueError, TypeError, AttributeError) as e:
-            if fallback is not _UNSET:
+            if fallback is not None:
                 return fallback
             raise ValueError(
                 f"Cannot convert {self.getval(section, option)} to {conv.__name__}"
