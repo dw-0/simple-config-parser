@@ -9,7 +9,7 @@ import re
 from enum import Enum
 
 # definition of section line:
-#  - then line MUST start with an opening square bracket - it is the first section marker
+#  - the line MUST start with an opening square bracket - it is the first section marker
 #  - the section marker MUST be followed by at least one character - it is the section name
 #  - the section name MUST be followed by a closing square bracket - it is the second section marker
 #  - the second section marker MAY be followed by any amount of whitespace characters
@@ -66,6 +66,7 @@ BOOLEAN_STATES = {
 HEADER_IDENT = "#_header"
 
 INDENT = " " * 4
+
 
 class LineType(Enum):
     OPTION = "option"

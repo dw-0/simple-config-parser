@@ -1,5 +1,5 @@
 # ======================================================================= #
-#  Copyright (C) 2024 Dominik Willner <th33xitus@gmail.com>               #
+#  Copyright (C) 2025 Dominik Willner <th33xitus@gmail.com>               #
 #                                                                         #
 #  https://github.com/dw-0/simple-config-parser                           #
 #                                                                         #
@@ -15,10 +15,14 @@ from ..simple_config_parser.constants import (
     BOOLEAN_STATES,
     EMPTY_LINE_RE,
     HEADER_IDENT,
+    INDENT,
     LINE_COMMENT_RE,
     OPTION_RE,
     OPTIONS_BLOCK_START_RE,
-    SECTION_RE, LineType, INDENT, SAVE_CONFIG_START_RE, SAVE_CONFIG_CONTENT_RE,
+    SAVE_CONFIG_CONTENT_RE,
+    SAVE_CONFIG_START_RE,
+    SECTION_RE,
+    LineType,
 )
 
 _UNSET = object()
@@ -46,6 +50,7 @@ class NoOptionError(Exception):
     def __init__(self, option: str, section: str):
         msg = f"Option '{option}' in section '{section}' is not defined"
         super().__init__(msg)
+
 
 class UnknownLineError(Exception):
     """Raised when a line is not recognized as any known type"""
@@ -100,37 +105,41 @@ class SimpleConfigParser:
         if self._match_section(line):
             self.current_opt_block = None
             self.current_section = SECTION_RE.match(line).group(1)
-            self.config[self.current_section] = {
-                "header": line,
-                "elements": []
-            }
+            self.config[self.current_section] = {"header": line, "elements": []}
 
         elif self._match_option(line):
             self.current_opt_block = None
             option = OPTION_RE.match(line).group(1)
             value = OPTION_RE.match(line).group(2)
-            self.config[self.current_section]["elements"].append({
-                "type": LineType.OPTION.value,
-                "name": option,
-                "value": value,
-                "raw": line
-            })
+            self.config[self.current_section]["elements"].append(
+                {
+                    "type": LineType.OPTION.value,
+                    "name": option,
+                    "value": value,
+                    "raw": line,
+                }
+            )
 
         elif self._match_options_block_start(line):
             option = OPTIONS_BLOCK_START_RE.match(line).group(1)
             self.current_opt_block = option
-            self.config[self.current_section]["elements"].append({
-                "type": LineType.OPTION_BLOCK.value,
-                "name": option,
-                "value": [],
-                "raw": line
-            })
+            self.config[self.current_section]["elements"].append(
+                {
+                    "type": LineType.OPTION_BLOCK.value,
+                    "name": option,
+                    "value": [],
+                    "raw": line,
+                }
+            )
 
         elif self.current_opt_block is not None:
             # we are in an option block, so we add the line to the option's value
             for element in reversed(self.config[self.current_section]["elements"]):
-                if element["type"] == LineType.OPTION_BLOCK.value and element["name"] == self.current_opt_block:
-                    element["value"].append(line.strip()) # indentation is removed
+                if (
+                    element["type"] == LineType.OPTION_BLOCK.value
+                    and element["name"] == self.current_opt_block
+                ):
+                    element["value"].append(line.strip())  # indentation is removed
                     break
 
         elif self._match_save_config_start(line):
@@ -149,11 +158,14 @@ class SimpleConfigParser:
             if not self.current_section:
                 self.config.setdefault(HEADER_IDENT, []).append(line)
             else:
-                element_type = LineType.BLANK.value if self._match_empty_line(line) else LineType.COMMENT.value
-                self.config[self.current_section]["elements"].append({
-                    "type": element_type,
-                    "content": line
-                })
+                element_type = (
+                    LineType.BLANK.value
+                    if self._match_empty_line(line)
+                    else LineType.COMMENT.value
+                )
+                self.config[self.current_section]["elements"].append(
+                    {"type": element_type, "content": line}
+                )
 
     def read_file(self, file: Path) -> None:
         """Read and parse a config file"""
@@ -182,7 +194,10 @@ class SimpleConfigParser:
                         f.write(element["raw"])
                         for line in element["value"]:
                             f.write(INDENT + line.strip() + "\n")
-                    elif element["type"] in [LineType.COMMENT.value, LineType.BLANK.value]:
+                    elif element["type"] in [
+                        LineType.COMMENT.value,
+                        LineType.BLANK.value,
+                    ]:
                         f.write(element["content"])
                     else:
                         raise UnknownLineError(element["raw"])
@@ -228,10 +243,7 @@ class SimpleConfigParser:
         if len(self.get_sections()) >= 1:
             self._check_set_section_spacing()
 
-        self.config[section] = {
-            "header": f"[{section}]\n",
-            "elements": []
-        }
+        self.config[section] = {"header": f"[{section}]\n", "elements": []}
 
     def _check_set_section_spacing(self):
         """Check if there is a blank line between the last section and the new section"""
@@ -252,16 +264,10 @@ class SimpleConfigParser:
 
                 # If the last element is not a blank line, add a blank line
                 if last_content.strip() != "":
-                    prev_elements.append({
-                        "type": "blank",
-                        "content": "\n"
-                    })
+                    prev_elements.append({"type": "blank", "content": "\n"})
             else:
                 # If the last element is an option, add a blank line
-                prev_elements.append({
-                    "type": LineType.BLANK.value,
-                    "content": "\n"
-                })
+                prev_elements.append({"type": LineType.BLANK.value, "content": "\n"})
 
     def remove_section(self, section: str) -> None:
         """Remove a section from the config"""
@@ -272,7 +278,10 @@ class SimpleConfigParser:
         options = []
         if self.has_section(section):
             for element in self.config[section]["elements"]:
-                if element["type"] in [LineType.OPTION.value, LineType.OPTION_BLOCK.value]:
+                if element["type"] in [
+                    LineType.OPTION.value,
+                    LineType.OPTION_BLOCK.value,
+                ]:
                     options.append(element["name"])
         return options
 
@@ -290,7 +299,10 @@ class SimpleConfigParser:
 
         # Check if option already exists
         for element in self.config[section]["elements"]:
-            if element["type"] in [LineType.OPTION.value, LineType.OPTION_BLOCK.value] and element["name"] == option:
+            if (
+                element["type"] in [LineType.OPTION.value, LineType.OPTION_BLOCK.value]
+                and element["name"] == option
+            ):
                 # Update existing option
                 if isinstance(value, list):
                     element["type"] = LineType.OPTION_BLOCK.value
@@ -308,14 +320,14 @@ class SimpleConfigParser:
                 "type": LineType.OPTION_BLOCK.value,
                 "name": option,
                 "value": value,
-                "raw": f"{option}:\n"
+                "raw": f"{option}:\n",
             }
         else:
             new_element = {
                 "type": LineType.OPTION.value,
                 "name": option,
                 "value": value,
-                "raw": f"{option}: {value}\n"
+                "raw": f"{option}: {value}\n",
             }
 
         # scan through elements to find the last option, after which we insert the new option
@@ -332,7 +344,11 @@ class SimpleConfigParser:
         if self.has_section(section):
             elements = self.config[section]["elements"]
             for i, element in enumerate(elements):
-                if element["type"] in [LineType.OPTION.value, LineType.OPTION_BLOCK.value] and element["name"] == option:
+                if (
+                    element["type"]
+                    in [LineType.OPTION.value, LineType.OPTION_BLOCK.value]
+                    and element["name"] == option
+                ):
                     elements.pop(i)
                     break
 
@@ -350,7 +366,10 @@ class SimpleConfigParser:
                 raise NoOptionError(option, section)
 
             for element in self.config[section]["elements"]:
-                if element["type"] is LineType.OPTION.value and element["name"] == option:
+                if (
+                    element["type"] is LineType.OPTION.value
+                    and element["name"] == option
+                ):
                     return str(element["value"].strip().replace("\n", ""))
             return ""
 
@@ -359,7 +378,9 @@ class SimpleConfigParser:
                 raise
             return fallback
 
-    def getvals(self, section: str, option: str, fallback: List[str] | _UNSET = _UNSET) -> List[str]:
+    def getvals(
+        self, section: str, option: str, fallback: List[str] | _UNSET = _UNSET
+    ) -> List[str]:
         """
         Return the values of the given multi-line option in the given section
 
@@ -373,7 +394,10 @@ class SimpleConfigParser:
                 raise NoOptionError(option, section)
 
             for element in self.config[section]["elements"]:
-                if element["type"] is LineType.OPTION_BLOCK.value and element["name"] == option:
+                if (
+                    element["type"] is LineType.OPTION_BLOCK.value
+                    and element["name"] == option
+                ):
                     return [val.strip() for val in element["value"] if val.strip()]
             return []
 
