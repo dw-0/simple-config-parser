@@ -12,7 +12,7 @@ import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Set, Union
 
 # definition of section line:
 #  - the line MUST start with an opening square bracket - it is the first section marker
@@ -89,6 +89,7 @@ class LineType(Enum):
     OPTION_BLOCK = "option_block"
     COMMENT = "comment"
     BLANK = "blank"
+
 
 _UNSET = object()
 
@@ -632,7 +633,7 @@ class SimpleConfigParser:
         section: str,
         option: str,
         conv: Callable[[str], int | float | bool],
-        fallback: _UNSET = _UNSET,
+        fallback: Any = _UNSET,
     ) -> int | float | bool:
         """Return the value of the given option in the given section as a converted value"""
         try:
